@@ -101,6 +101,99 @@ def resolve_api_key(provider_id: str, api_key: Optional[str] = None) -> Optional
     return load_env_variables(spec.api_key_env)
 
 
+# ----------------------------------------------------------------------
+# OpenAI-compatible endpoints (used by tool-calling loops)
+# ----------------------------------------------------------------------
+#
+# Some consumers (e.g. the MCP tool-calling agent) need a raw OpenAI client
+# pointing at a provider's ``/chat/completions`` endpoint rather than a
+# wrapper instance.  Endpoint metadata lives here so the application does
+# not have to keep its own provider -> (base_url, env) map.
+
+@dataclass(frozen=True)
+class OpenAIEndpointSpec:
+    base_url: Optional[str] = None
+    api_key_env: Optional[str] = None
+    requires_api_key: bool = True
+    default_key: Optional[str] = None
+
+
+_ENDPOINTS: Dict[str, OpenAIEndpointSpec] = {}
+_ENDPOINT_ALIASES: Dict[str, str] = {}
+
+
+def register_openai_endpoint(
+    provider_id: str,
+    base_url: Optional[str] = None,
+    *,
+    api_key_env: Optional[str] = None,
+    requires_api_key: bool = True,
+    default_key: Optional[str] = None,
+    aliases: tuple[str, ...] = (),
+    overwrite: bool = False,
+) -> None:
+    """Register OpenAI-compatible endpoint metadata for ``provider_id``."""
+    if provider_id in _ENDPOINTS and not overwrite:
+        raise ValueError(f"OpenAI endpoint already registered: {provider_id}")
+    _ENDPOINTS[provider_id] = OpenAIEndpointSpec(
+        base_url=base_url,
+        api_key_env=api_key_env,
+        requires_api_key=requires_api_key,
+        default_key=default_key,
+    )
+    for alias in aliases:
+        _ENDPOINT_ALIASES[alias] = provider_id
+
+
+def unregister_openai_endpoint(provider_id: str) -> None:
+    _ENDPOINTS.pop(provider_id, None)
+    for alias, target in list(_ENDPOINT_ALIASES.items()):
+        if target == provider_id or alias == provider_id:
+            _ENDPOINT_ALIASES.pop(alias, None)
+
+
+def _resolve_endpoint_spec(provider_id: str) -> Optional[OpenAIEndpointSpec]:
+    spec = _ENDPOINTS.get(provider_id)
+    if spec is not None:
+        return spec
+    canonical = _ENDPOINT_ALIASES.get(provider_id)
+    if canonical is not None:
+        return _ENDPOINTS.get(canonical)
+    return None
+
+
+def supports_openai_tools(provider_id: str) -> bool:
+    """Whether ``provider_id`` exposes an OpenAI-compatible endpoint."""
+    return _resolve_endpoint_spec(provider_id) is not None
+
+
+def resolve_openai_endpoint(provider_id: str, api_key: Optional[str] = None) -> tuple[Optional[str], str]:
+    """Return ``(base_url, api_key)`` for an OpenAI-compatible provider.
+
+    Raises:
+        ValueError: the provider is not registered as OpenAI-compatible, or
+            a required API key is missing.
+    """
+    spec = _resolve_endpoint_spec(provider_id)
+    if spec is None:
+        raise ValueError(f"Provider '{provider_id}' does not support OpenAI-compatible tool calling")
+
+    key = api_key
+    if not key and spec.api_key_env:
+        key = load_env_variables(spec.api_key_env)
+    if not key:
+        key = spec.default_key
+
+    if spec.requires_api_key and not key:
+        raise ValueError(f"API key is required for provider '{provider_id}'")
+
+    return spec.base_url, key or "not-needed"
+
+
+def list_openai_endpoints() -> List[str]:
+    return list(_ENDPOINTS.keys())
+
+
 def create_client(
     selected_model: str,
     provider: PROVIDER_ID | str,
@@ -181,6 +274,27 @@ def _register_builtin_providers() -> None:
     register_client_builder("lmstudio", LMStudioIntegrator, requires_api_key=False)
     register_client_builder("vllm", vLLMClientWrapper, requires_api_key=False)
 
+    # OpenAI-compatible endpoints for raw-client consumers (tool loops).
+    register_openai_endpoint("openai", None, api_key_env="OPENAI_API_KEY")
+    register_openai_endpoint("xai", "https://api.x.ai/v1", api_key_env="XAI_API_KEY")
+    register_openai_endpoint("openrouter", "https://openrouter.ai/api/v1", api_key_env="OPENROUTER_API_KEY")
+    register_openai_endpoint("mistralai", "https://api.mistral.ai/v1", api_key_env="MISTRAL_API_KEY")
+    register_openai_endpoint(
+        "lmstudio",
+        "http://localhost:1234/v1",
+        api_key_env="LM_API_KEY",
+        requires_api_key=False,
+        default_key="not-needed",
+    )
+    register_openai_endpoint(
+        "vllm",
+        "http://localhost:8000/v1",
+        api_key_env="VLLM_API_KEY",
+        requires_api_key=False,
+        default_key="not-needed",
+        aliases=("vllm-api",),
+    )
+
 
 _register_builtin_providers()
 
@@ -188,11 +302,17 @@ __all__ = [
     "CUSTOM_PREFIX",
     "ClientBuilder",
     "ClientBuilderSpec",
+    "OpenAIEndpointSpec",
     "ProviderRegistry",
     "create_client",
     "is_supported_provider",
+    "list_openai_endpoints",
     "register_client_builder",
+    "register_openai_endpoint",
     "resolve_api_key",
+    "resolve_openai_endpoint",
     "supported_providers",
+    "supports_openai_tools",
     "unregister_client_builder",
+    "unregister_openai_endpoint",
 ]
