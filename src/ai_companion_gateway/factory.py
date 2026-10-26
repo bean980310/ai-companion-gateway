@@ -278,6 +278,7 @@ def _register_builtin_providers() -> None:
     register_openai_endpoint("openai", None, api_key_env="OPENAI_API_KEY")
     register_openai_endpoint("xai", "https://api.x.ai/v1", api_key_env="XAI_API_KEY")
     register_openai_endpoint("openrouter", "https://openrouter.ai/api/v1", api_key_env="OPENROUTER_API_KEY")
+    register_openai_endpoint("requesty", "https://router.requesty.ai/v1", api_key_env="REQUESTY_API_KEY")
     register_openai_endpoint("mistralai", "https://api.mistral.ai/v1", api_key_env="MISTRAL_API_KEY")
     register_openai_endpoint(
         "lmstudio",

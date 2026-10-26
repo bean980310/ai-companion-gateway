@@ -16,6 +16,9 @@ Provider-agnostic LLM gateway for AI Companion, extracted from
   tool-calling loops.
 - `interfaces/providers.py`, `registries/provider_registry.py` — provider specs
   and capability registry.
+- `listing.py` — `list_models()` / `list_all_models()` for the application's
+  "All providers" model picker, with per-provider listers that applications can
+  extend via `register_model_lister()` (e.g. for `custom:*` profiles).
 - `interfaces/tools.py`, `tool_calling.py` — provider-agnostic tool-calling loop.
 
 `ai-companion-llm-backend` depends on this package and keeps only the local

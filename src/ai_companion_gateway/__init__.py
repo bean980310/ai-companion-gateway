@@ -53,6 +53,16 @@ from .factory import (
     unregister_client_builder,
     unregister_openai_endpoint,
 )
+from .listing import (
+    ModelLister,
+    ModelListingError,
+    list_all_models,
+    list_model_providers,
+    list_models,
+    register_model_lister,
+    supports_model_listing,
+    unregister_model_lister,
+)
 
 __all__ = [
     # Base classes
@@ -87,6 +97,15 @@ __all__ = [
     "supports_openai_tools",
     "unregister_client_builder",
     "unregister_openai_endpoint",
+    # Model listing
+    "ModelLister",
+    "ModelListingError",
+    "list_all_models",
+    "list_model_providers",
+    "list_models",
+    "register_model_lister",
+    "supports_model_listing",
+    "unregister_model_lister",
     "ProviderRegistry",
     "ProviderSpec",
     "ProviderCapabilities",
@@ -102,4 +121,4 @@ __all__ = [
     "provider_supports_tools",
 ]
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
