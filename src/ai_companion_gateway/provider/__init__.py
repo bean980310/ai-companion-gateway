@@ -5,7 +5,7 @@ from .lmstudio import LMStudioIntegrator
 from .ollama import OllamaIntegrator
 from .openai import OpenAIClientWrapper
 from .openrouter import OpenRouterClientWrapper
-from .perplexity import PerplexityClientWrapper
+from .openai_compatible import OpenAICompatibleClientWrapper
 from .requesty import RequestyClientWrapper
 from .vllm import vLLMClientWrapper
 from .xai import XAIClientWrapper

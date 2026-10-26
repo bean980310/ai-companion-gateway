@@ -137,3 +137,29 @@ ProviderRegistry.register(
         ),
     )
 )
+
+ProviderRegistry.register(
+    ProviderSpec(
+        id="omlx",
+        display_name="OMLX (Local)",
+        requires_api_key=False,
+        base_url_hint="http://localhost:8001/v1",
+        default_kwargs={"temperature": 1.0, "top_p": 1.0, "top_k": 50},
+        capabilities=ProviderCapabilities(
+            chat=True, vision=True, tools=True, tools_native=True, embeddings=False, streaming=True
+        ),
+    )
+)
+
+ProviderRegistry.register(
+    ProviderSpec(
+        id="sglang",
+        display_name="SGLang (Local)",
+        requires_api_key=False,
+        base_url_hint="http://localhost:30001/v1",
+        default_kwargs={"temperature": 1.0, "top_p": 1.0, "top_k": 50},
+        capabilities=ProviderCapabilities(
+            chat=True, vision=True, tools=True, tools_native=True, embeddings=False, streaming=True
+        ),
+    )
+)

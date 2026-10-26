@@ -204,15 +204,6 @@ def _list_ollama(api_key: Optional[str], base_url: Optional[str]) -> List[str]:
     return [m.model for m in client.list().models]
 
 
-def _list_perplexity(api_key: Optional[str], base_url: Optional[str]) -> List[str]:
-    import requests
-
-    headers = {"Authorization": f"Bearer {api_key}"} if api_key else {}
-    response = requests.get("https://api.perplexity.ai/v1/models", headers=headers, timeout=_DEFAULT_TIMEOUT)
-    response.raise_for_status()
-    return [m["id"] for m in response.json().get("data", [])]
-
-
 def _list_mistralai(api_key: Optional[str], base_url: Optional[str]) -> List[str]:
     from mistralai.client import Mistral
 
@@ -235,10 +226,11 @@ def _register_builtin_listers() -> None:
     register_model_lister("requesty", _list_openai_compatible)
     register_model_lister("lmstudio", _list_openai_compatible)
     register_model_lister("vllm", _list_openai_compatible, aliases=("vllm-api",))
+    register_model_lister("omlx", _list_openai_compatible)
+    register_model_lister("sglang", _list_openai_compatible)
     register_model_lister("anthropic", _list_anthropic)
     register_model_lister("google-genai", _list_google_genai)
     register_model_lister("ollama", _list_ollama)
-    register_model_lister("perplexity", _list_perplexity)
     register_model_lister("mistralai", _list_mistralai)
 
 

@@ -24,8 +24,8 @@ from .provider.huggingface import HuggingfaceInferenceClientWrapper
 from .provider.lmstudio import LMStudioIntegrator
 from .provider.ollama import OllamaIntegrator
 from .provider.openai import OpenAIClientWrapper
+from .provider.openai_compatible import OpenAICompatibleClientWrapper
 from .provider.openrouter import OpenRouterClientWrapper
-from .provider.perplexity import PerplexityClientWrapper
 from .provider.requesty import RequestyClientWrapper
 from .provider.vllm import vLLMClientWrapper
 from .provider.xai import XAIClientWrapper
@@ -228,6 +228,20 @@ def create_client(
 # Built-in provider registrations
 # ----------------------------------------------------------------------
 
+def _build_openai_compatible_client(base_url: str, *, default_key: str):
+    """Create a builder for an OpenAI-compatible server at ``base_url``."""
+
+    def _build(selected_model: str, api_key: Optional[str] = None, **kwargs: Any):
+        return OpenAICompatibleClientWrapper(
+            selected_model,
+            api_key=api_key or default_key,
+            base_url=base_url,
+            **kwargs,
+        )
+
+    return _build
+
+
 def _register_builtin_providers() -> None:
     register_client_builder(
         "openai",
@@ -243,11 +257,6 @@ def _register_builtin_providers() -> None:
         "google-genai",
         GoogleAIClientWrapper,
         api_key_env="GEMINI_API_KEY",
-    )
-    register_client_builder(
-        "perplexity",
-        PerplexityClientWrapper,
-        api_key_env="PERPLEXITY_API_KEY",
     )
     register_client_builder(
         "xai",
@@ -273,6 +282,16 @@ def _register_builtin_providers() -> None:
     register_client_builder("ollama", OllamaIntegrator, requires_api_key=False)
     register_client_builder("lmstudio", LMStudioIntegrator, requires_api_key=False)
     register_client_builder("vllm", vLLMClientWrapper, requires_api_key=False)
+    register_client_builder(
+        "omlx",
+        _build_openai_compatible_client("http://localhost:8001/v1", default_key="omlx"),
+        requires_api_key=False,
+    )
+    register_client_builder(
+        "sglang",
+        _build_openai_compatible_client("http://localhost:30001/v1", default_key="sglang"),
+        requires_api_key=False,
+    )
 
     # OpenAI-compatible endpoints for raw-client consumers (tool loops).
     register_openai_endpoint("openai", None, api_key_env="OPENAI_API_KEY")
@@ -294,6 +313,20 @@ def _register_builtin_providers() -> None:
         requires_api_key=False,
         default_key="not-needed",
         aliases=("vllm-api",),
+    )
+    register_openai_endpoint(
+        "omlx",
+        "http://localhost:8001/v1",
+        api_key_env="OMLX_API_KEY",
+        requires_api_key=False,
+        default_key="omlx",
+    )
+    register_openai_endpoint(
+        "sglang",
+        "http://localhost:30001/v1",
+        api_key_env="SGLANG_API_KEY",
+        requires_api_key=False,
+        default_key="sglang",
     )
 
 

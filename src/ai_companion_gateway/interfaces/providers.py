@@ -2,7 +2,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Dict, Optional, Protocol, List, Literal
 
-PROVIDER_ID = Literal["openai", "anthropic", "google-genai", "perplexity", "xai", 'mistralai', "openrouter", "hf-inference", "ollama", "lmstudio", "vllm", "self-provided"]
+PROVIDER_ID = Literal["openai", "anthropic", "google-genai", "xai", 'mistralai', "openrouter", "hf-inference", "ollama", "lmstudio", "vllm", "omlx", "sglang", "self-provided"]
 
 @dataclass(frozen=True)
 class ProviderCapabilities:

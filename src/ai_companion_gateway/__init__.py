@@ -31,7 +31,7 @@ from .provider import (
     OllamaIntegrator,
     OpenAIClientWrapper,
     OpenRouterClientWrapper,
-    PerplexityClientWrapper,
+    OpenAICompatibleClientWrapper,
     RequestyClientWrapper,
     XAIClientWrapper,
     vLLMClientWrapper,
@@ -77,7 +77,7 @@ __all__ = [
     "OllamaIntegrator",
     "OpenAIClientWrapper",
     "OpenRouterClientWrapper",
-    "PerplexityClientWrapper",
+    "OpenAICompatibleClientWrapper",
     "RequestyClientWrapper",
     "XAIClientWrapper",
     "vLLMClientWrapper",
@@ -121,4 +121,4 @@ __all__ = [
     "provider_supports_tools",
 ]
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
