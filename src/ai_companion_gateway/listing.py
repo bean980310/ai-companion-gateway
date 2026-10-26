@@ -207,7 +207,8 @@ def _list_ollama(api_key: Optional[str], base_url: Optional[str]) -> List[str]:
 def _list_perplexity(api_key: Optional[str], base_url: Optional[str]) -> List[str]:
     import requests
 
-    response = requests.get("https://api.perplexity.ai/v1/models", timeout=_DEFAULT_TIMEOUT)
+    headers = {"Authorization": f"Bearer {api_key}"} if api_key else {}
+    response = requests.get("https://api.perplexity.ai/v1/models", headers=headers, timeout=_DEFAULT_TIMEOUT)
     response.raise_for_status()
     return [m["id"] for m in response.json().get("data", [])]
 
