@@ -177,14 +177,14 @@ def _list_openai_chat(api_key: Optional[str], base_url: Optional[str]) -> List[s
 def _list_anthropic(api_key: Optional[str], base_url: Optional[str]) -> List[str]:
     from anthropic import Anthropic
 
-    client = Anthropic(api_key=api_key)
+    client = Anthropic(api_key=api_key, timeout=_DEFAULT_TIMEOUT)
     return [m.id for m in client.beta.models.list().data]
 
 
 def _list_google_genai(api_key: Optional[str], base_url: Optional[str]) -> List[str]:
     from google import genai
 
-    client = genai.Client(api_key=api_key)
+    client = genai.Client(api_key=api_key, http_options={"timeout": int(_DEFAULT_TIMEOUT * 1000)})
     models: List[str] = []
     for m in client.models.list().page:
         name = m.name
@@ -200,7 +200,7 @@ def _list_google_genai(api_key: Optional[str], base_url: Optional[str]) -> List[
 def _list_ollama(api_key: Optional[str], base_url: Optional[str]) -> List[str]:
     import ollama
 
-    client = ollama.Client(host=base_url or "http://localhost:11434")
+    client = ollama.Client(host=base_url or "http://localhost:11434", timeout=_DEFAULT_TIMEOUT)
     return [m.model for m in client.list().models]
 
 
@@ -215,7 +215,7 @@ def _list_perplexity(api_key: Optional[str], base_url: Optional[str]) -> List[st
 def _list_mistralai(api_key: Optional[str], base_url: Optional[str]) -> List[str]:
     from mistralai.client import Mistral
 
-    client = Mistral(api_key=api_key)
+    client = Mistral(api_key=api_key, timeout_ms=int(_DEFAULT_TIMEOUT * 1000))
     models: List[str] = []
     for m in client.models.list().data:
         capabilities = getattr(m, "capabilities", None)
